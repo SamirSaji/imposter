@@ -1,5 +1,7 @@
 # Imposter Finder
 
+**[Play Now](https://imposter-samirsaji.netlify.app/)**
+
 A fun party game to play with friends - find out who doesn't know the secret word!
 
 ## Why?
