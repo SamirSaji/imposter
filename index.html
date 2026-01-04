@@ -1156,42 +1156,57 @@
       }
 
       bindEvents() {
+        // Helper for touch + click
+        const addTouchClick = (id, handler) => {
+          const el = document.getElementById(id);
+          el.addEventListener('click', handler);
+          el.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            handler();
+          }, { passive: false });
+        };
+
         // Setup screen
-        document.getElementById('btn-increment').addEventListener('click', () => this.game.incrementPlayers());
-        document.getElementById('btn-decrement').addEventListener('click', () => this.game.decrementPlayers());
-        document.getElementById('btn-start').addEventListener('click', () => this.game.startGame());
+        addTouchClick('btn-increment', () => this.game.incrementPlayers());
+        addTouchClick('btn-decrement', () => this.game.decrementPlayers());
+        addTouchClick('btn-start', () => this.game.startGame());
 
         // Passing screen - tap to reveal
-        document.getElementById('passing-screen').addEventListener('click', () => {
+        const passingScreen = document.getElementById('passing-screen');
+        const handlePassingTap = () => {
           if (this.game.state.phase === 'passing') {
             this.game.revealCard();
           }
-        });
+        };
+        passingScreen.addEventListener('click', handlePassingTap);
+        passingScreen.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          handlePassingTap();
+        }, { passive: false });
 
         // Reveal screen - tap to hide
-        document.getElementById('reveal-screen').addEventListener('click', () => {
+        const revealScreen = document.getElementById('reveal-screen');
+        const handleRevealTap = () => {
           if (this.game.state.phase === 'reveal') {
             const card = document.getElementById('game-card');
             card.classList.remove('flipped');
             setTimeout(() => this.game.hideCard(), 350);
           }
-        });
+        };
+        revealScreen.addEventListener('click', handleRevealTap);
+        revealScreen.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          handleRevealTap();
+        }, { passive: false });
 
-        // Results screen
-        document.getElementById('btn-show-word').addEventListener('click', () => this.game.revealWord());
-        document.getElementById('btn-reveal-imposters').addEventListener('click', () => this.game.revealImposters());
-        document.getElementById('btn-new-game').addEventListener('click', () => this.game.resetGame());
-        document.getElementById('btn-same-players').addEventListener('click', () => this.game.quickRestart());
+        // Results screen buttons
+        addTouchClick('btn-show-word', () => this.game.revealWord());
+        addTouchClick('btn-reveal-imposters', () => this.game.revealImposters());
+        addTouchClick('btn-new-game', () => this.game.resetGame());
+        addTouchClick('btn-same-players', () => this.game.quickRestart());
 
         // Keyboard navigation
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
-
-        // Prevent double-tap zoom on mobile
-        document.addEventListener('touchend', (e) => {
-          if (e.target.closest('.tappable')) {
-            e.preventDefault();
-          }
-        }, { passive: false });
       }
 
       handleKeyboard(e) {
