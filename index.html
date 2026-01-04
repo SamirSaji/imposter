@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#667eea">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Imposter Finder</title>
+
+  <style>
+    /* === CSS Reset & Base === */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      /* Vibrant Color Palette */
+      --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --gradient-accent: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --gradient-success: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+      --gradient-imposter: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+
+      --color-white: #ffffff;
+      --color-dark: #1a1a2e;
+      --color-imposter: #ff6b6b;
+      --color-success: #4ecdc4;
+
+      /* Glass Effect */
+      --glass-bg: rgba(255, 255, 255, 0.15);
+      --glass-border: rgba(255, 255, 255, 0.25);
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+
+      /* Typography */
+      --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --text-xs: clamp(0.75rem, 2vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 2.5vw, 1rem);
+      --text-base: clamp(1rem, 3vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 3.5vw, 1.25rem);
+      --text-xl: clamp(1.25rem, 4vw, 1.5rem);
+      --text-2xl: clamp(1.5rem, 5vw, 2rem);
+      --text-3xl: clamp(2rem, 6vw, 2.5rem);
+      --text-4xl: clamp(2.5rem, 8vw, 3.5rem);
+      --text-5xl: clamp(3rem, 10vw, 4.5rem);
+
+      /* Spacing */
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.25rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-10: 2.5rem;
+      --space-12: 3rem;
+
+      /* Border Radius */
+      --radius-md: 0.75rem;
+      --radius-lg: 1rem;
+      --radius-xl: 1.5rem;
+      --radius-2xl: 2rem;
+      --radius-full: 9999px;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+      position: fixed;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background: var(--gradient-bg);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      color: var(--color-white);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    /* === App Container === */
+    #app {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      padding: max(var(--space-6), env(safe-area-inset-top))
+               max(var(--space-4), env(safe-area-inset-right))
+               max(var(--space-6), env(safe-area-inset-bottom))
+               max(var(--space-4), env(safe-area-inset-left));
+    }
+
+    /* === Screen Base === */
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      gap: var(--space-6);
+      text-align: center;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .screen.active {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .screen.tappable {
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    /* === Typography === */
+    .title {
+      font-size: var(--text-4xl);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .subtitle {
+      font-size: var(--text-lg);
+      opacity: 0.9;
+      max-width: 280px;
+      line-height: 1.5;
+    }
+
+    /* === Buttons === */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      min-height: 56px;
+      min-width: 200px;
+      padding: var(--space-4) var(--space-8);
+      font-size: var(--text-lg);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: none;
+      border-radius: var(--radius-xl);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn-primary {
+      background: var(--color-white);
+      color: #764ba2;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: var(--glass-bg);
+      color: var(--color-white);
+      border: 2px solid var(--glass-border);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .btn-reveal {
+      background: var(--gradient-imposter);
+      color: var(--color-white);
+      box-shadow: 0 10px 40px rgba(255, 107, 107, 0.4);
+    }
+
+    .btn-round {
+      width: 56px;
+      height: 56px;
+      min-width: 56px;
+      padding: 0;
+      font-size: var(--text-2xl);
+      font-weight: 700;
+      border-radius: var(--radius-full);
+      background: var(--glass-bg);
+      color: var(--color-white);
+      border: 2px solid var(--glass-border);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .btn-round:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* === Player Selector === */
+    .player-selector {
+      display: flex;
+      align-items: center;
+      gap: var(--space-6);
+    }
+
+    .player-count-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 100px;
+    }
+
+    .count-number {
+      font-size: var(--text-5xl);
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .count-label {
+      font-size: var(--text-sm);
+      opacity: 0.8;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .imposter-info {
+      font-size: var(--text-sm);
+      opacity: 0.8;
+      margin-top: var(--space-2);
+      background: var(--glass-bg);
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-full);
+    }
+
+    /* === Player Dots === */
+    .player-dots {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 200px;
+    }
+
+    .player-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: var(--radius-full);
+      background: var(--color-white);
+      opacity: 0.6;
+      transition: all 0.3s ease;
+    }
+
+    .player-dot.imposter {
+      background: var(--color-imposter);
+      opacity: 1;
+      box-shadow: 0 0 10px var(--color-imposter);
+    }
+
+    .player-dot.active {
+      opacity: 1;
+      transform: scale(1.3);
+    }
+
+    /* === Progress Bar === */
+    .progress-container {
+      width: 100%;
+      max-width: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--color-white);
+      border-radius: var(--radius-full);
+      transition: width 0.4s ease-out;
+    }
+
+    .progress-text {
+      font-size: var(--text-sm);
+      opacity: 0.8;
+    }
+
+    /* === Passing Screen === */
+    .player-turn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .player-label {
+      font-size: var(--text-xl);
+      opacity: 0.9;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .player-number {
+      font-size: var(--text-5xl);
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .tap-prompt {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+      margin-top: var(--space-8);
+    }
+
+    .tap-icon {
+      font-size: var(--text-4xl);
+      animation: tapBounce 1.2s ease-in-out infinite;
+    }
+
+    @keyframes tapBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+
+    .tap-text {
+      font-size: var(--text-lg);
+      opacity: 0.9;
+    }
+
+    .pass-instruction {
+      font-size: var(--text-sm);
+      opacity: 0.6;
+      margin-top: auto;
+      padding-bottom: var(--space-4);
+    }
+
+    /* === Card Component === */
+    .card-container {
+      perspective: 1200px;
+      width: min(300px, 80vw);
+      height: min(420px, 55vh);
+    }
+
+    .card {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-4);
+      padding: var(--space-8);
+      border-radius: var(--radius-2xl);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    .card-front {
+      background: var(--glass-bg);
+      border: 2px solid var(--glass-border);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: var(--glass-shadow);
+    }
+
+    .card-front-icon {
+      font-size: 80px;
+      opacity: 0.5;
+    }
+
+    .card-front-text {
+      font-size: var(--text-xl);
+      opacity: 0.6;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+
+    .card-back {
+      transform: rotateY(180deg);
+      background: var(--gradient-success);
+      box-shadow: 0 20px 60px rgba(78, 205, 196, 0.4);
+    }
+
+    .card.imposter .card-back {
+      background: var(--gradient-imposter);
+      box-shadow: 0 20px 60px rgba(255, 107, 107, 0.5);
+    }
+
+    .card-emoji {
+      font-size: 64px;
+    }
+
+    .word-display {
+      font-size: var(--text-3xl);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: center;
+      word-break: break-word;
+    }
+
+    .card-subtitle {
+      font-size: var(--text-base);
+      opacity: 0.9;
+      text-align: center;
+    }
+
+    .hide-prompt {
+      font-size: var(--text-base);
+      opacity: 0.7;
+      margin-top: auto;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    /* === Results Screen === */
+    .results-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-3xl);
+      background: var(--color-white);
+      color: #4ecdc4;
+      border-radius: var(--radius-full);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .results-title {
+      font-size: var(--text-2xl);
+      font-weight: 700;
+    }
+
+    .results-card {
+      background: var(--glass-bg);
+      border: 2px solid var(--glass-border);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: var(--radius-2xl);
+      padding: var(--space-8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-4);
+      min-width: min(300px, 85vw);
+    }
+
+    .results-label {
+      font-size: var(--text-base);
+      opacity: 0.8;
+    }
+
+    .results-word {
+      font-size: var(--text-3xl);
+      font-weight: 800;
+      color: var(--color-success);
+      text-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+    }
+
+    .results-word.hidden {
+      filter: blur(20px);
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .results-count {
+      font-size: var(--text-sm);
+      opacity: 0.7;
+      background: rgba(255, 255, 255, 0.1);
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-full);
+    }
+
+    .results-prompt {
+      font-size: var(--text-lg);
+      opacity: 0.9;
+      margin-top: var(--space-2);
+    }
+
+    .imposters-reveal {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+      margin-top: var(--space-4);
+      padding: var(--space-4);
+      background: rgba(255, 107, 107, 0.2);
+      border-radius: var(--radius-lg);
+      animation: fadeIn 0.4s ease;
+    }
+
+    .imposters-reveal.visible {
+      display: flex;
+    }
+
+    .imposters-reveal-label {
+      font-size: var(--text-sm);
+      opacity: 0.8;
+    }
+
+    .imposters-reveal-players {
+      font-size: var(--text-xl);
+      font-weight: 700;
+      color: var(--color-imposter);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .results-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      width: 100%;
+      max-width: 280px;
+    }
+
+    /* === Screen Reader Only === */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* === Reduced Motion === */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+
+      body {
+        animation: none;
+        background-size: 100% 100%;
+      }
+    }
+
+    /* === Landscape Mode === */
+    @media (orientation: landscape) and (max-height: 500px) {
+      .screen {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: var(--space-4);
+        padding: var(--space-2);
+      }
+
+      .card-container {
+        height: min(300px, 70vh);
+        width: auto;
+        aspect-ratio: 3/4;
+      }
+
+      .title {
+        font-size: var(--text-2xl);
+      }
+
+      .results-card {
+        padding: var(--space-4);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main id="app">
+    <!-- Setup Screen -->
+    <section id="setup-screen" class="screen active" aria-label="Game Setup">
+      <h1 class="title">Imposter Finder</h1>
+      <p class="subtitle">One of you doesn't know the word... Can you find them?</p>
+
+      <div class="player-selector" role="group" aria-label="Select number of players">
+        <button id="btn-decrement" class="btn btn-round" aria-label="Decrease players">-</button>
+        <div class="player-count-display">
+          <span id="player-count" class="count-number" aria-live="polite">4</span>
+          <span class="count-label">Players</span>
+        </div>
+        <button id="btn-increment" class="btn btn-round" aria-label="Increase players">+</button>
+      </div>
+
+      <div id="player-dots" class="player-dots" aria-hidden="true"></div>
+      <div id="imposter-info" class="imposter-info">1 imposter among you</div>
+
+      <button id="btn-start" class="btn btn-primary">Start Game</button>
+    </section>
+
+    <!-- Passing Screen -->
+    <section id="passing-screen" class="screen tappable" role="button" tabindex="0" aria-label="Tap to reveal your card">
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+        </div>
+        <span id="progress-text" class="progress-text">1 / 4</span>
+      </div>
+
+      <div class="player-turn">
+        <span class="player-label">Player</span>
+        <span id="current-player" class="player-number">1</span>
+      </div>
+
+      <div class="tap-prompt">
+        <span class="tap-icon" aria-hidden="true">&#128070;</span>
+        <span class="tap-text">Tap to reveal your card</span>
+      </div>
+
+      <p class="pass-instruction">Pass the device privately</p>
+    </section>
+
+    <!-- Reveal Screen -->
+    <section id="reveal-screen" class="screen tappable" role="button" tabindex="0" aria-label="Tap to hide and pass">
+      <div class="card-container">
+        <div id="game-card" class="card" role="img" aria-labelledby="card-word">
+          <div class="card-face card-front">
+            <span class="card-front-icon">?</span>
+            <span class="card-front-text">Your Role</span>
+          </div>
+          <div class="card-face card-back">
+            <span id="card-emoji" class="card-emoji"></span>
+            <span id="card-word" class="word-display"></span>
+            <span id="card-subtitle" class="card-subtitle"></span>
+          </div>
+        </div>
+      </div>
+
+      <p class="hide-prompt">Tap anywhere to hide and pass</p>
+    </section>
+
+    <!-- Results Screen -->
+    <section id="results-screen" class="screen" aria-label="Game Results">
+      <div class="results-header">
+        <span class="success-icon" aria-hidden="true">&#10003;</span>
+        <h2 class="results-title">All Cards Dealt!</h2>
+      </div>
+
+      <div class="results-card">
+        <p class="results-label">The secret word is:</p>
+        <p id="result-word" class="results-word hidden"></p>
+        <p id="result-count" class="results-count"></p>
+        <p class="results-prompt">Discuss and find the imposters!</p>
+
+        <div id="imposters-reveal" class="imposters-reveal">
+          <span class="imposters-reveal-label">The imposters were:</span>
+          <span id="imposters-players" class="imposters-reveal-players"></span>
+        </div>
+      </div>
+
+      <div class="results-actions">
+        <button id="btn-show-word" class="btn btn-primary">Show Word</button>
+        <button id="btn-reveal-imposters" class="btn btn-reveal" style="display: none;">Reveal Imposters</button>
+        <button id="btn-same-players" class="btn btn-secondary">Play Again</button>
+        <button id="btn-new-game" class="btn btn-secondary">Change Players</button>
+      </div>
+    </section>
+
+    <!-- Screen Reader Announcements -->
+    <div id="sr-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  </main>
+
+  <script>
+    // === Word List (1000 Easy-Medium Words) ===
+    const WORDS = [
+      // Animals (100)
+      "elephant", "dolphin", "penguin", "giraffe", "kangaroo", "butterfly", "crocodile", "flamingo", "hedgehog", "jellyfish",
+      "koala", "leopard", "monkey", "octopus", "parrot", "rabbit", "seahorse", "tiger", "unicorn", "vulture",
+      "whale", "zebra", "alligator", "bear", "camel", "deer", "eagle", "frog", "gorilla", "hamster",
+      "iguana", "jaguar", "kitten", "lizard", "moose", "newt", "owl", "panda", "quail", "raccoon",
+      "shark", "turtle", "urchin", "viper", "walrus", "fox", "yak", "antelope", "badger", "cheetah",
+      "donkey", "eel", "falcon", "goat", "heron", "impala", "jackal", "kiwi", "llama", "meerkat",
+      "narwhal", "ostrich", "peacock", "quokka", "reindeer", "salmon", "toucan", "otter", "wombat", "beaver",
+      "cricket", "dragonfly", "firefly", "grasshopper", "hornet", "beetle", "ladybug", "mosquito", "spider", "scorpion",
+      "snail", "starfish", "stingray", "swan", "pelican", "pigeon", "raven", "robin", "seagull", "sparrow",
+      "woodpecker", "catfish", "goldfish", "lobster", "oyster", "shrimp", "squid", "crab", "clam", "puppy",
+
+      // Food (100)
+      "pizza", "hamburger", "spaghetti", "chocolate", "pancake", "sandwich", "popcorn", "cupcake", "waffle", "pretzel",
+      "burrito", "taco", "sushi", "noodles", "dumpling", "croissant", "bagel", "muffin", "donut", "cookie",
+      "brownie", "cheesecake", "icecream", "milkshake", "smoothie", "lemonade", "coffee", "tea", "juice", "soda",
+      "apple", "banana", "orange", "strawberry", "blueberry", "raspberry", "watermelon", "pineapple", "mango", "coconut",
+      "grape", "cherry", "peach", "pear", "lemon", "lime", "papaya", "avocado", "tomato", "potato",
+      "carrot", "broccoli", "spinach", "lettuce", "cucumber", "pepper", "onion", "garlic", "mushroom", "corn",
+      "beans", "peas", "celery", "cabbage", "cauliflower", "zucchini", "eggplant", "pumpkin", "squash", "bread",
+      "butter", "cheese", "milk", "yogurt", "cream", "egg", "bacon", "sausage", "steak", "chicken",
+      "turkey", "fish", "rice", "pasta", "soup", "salad", "sauce", "ketchup", "mustard", "mayo",
+      "honey", "syrup", "jam", "peanut", "almond", "walnut", "cashew", "pistachio", "hazelnut", "macadamia",
+
+      // Places (100)
+      "beach", "mountain", "forest", "desert", "island", "volcano", "waterfall", "canyon", "valley", "glacier",
+      "ocean", "river", "lake", "pond", "stream", "swamp", "jungle", "meadow", "prairie", "tundra",
+      "airport", "hospital", "school", "library", "museum", "theater", "stadium", "church", "temple", "castle",
+      "palace", "tower", "bridge", "tunnel", "highway", "railroad", "subway", "harbor", "lighthouse", "windmill",
+      "farm", "ranch", "vineyard", "orchard", "garden", "park", "playground", "zoo", "aquarium", "circus",
+      "hotel", "motel", "resort", "cabin", "cottage", "mansion", "apartment", "dormitory", "basement", "attic",
+      "kitchen", "bedroom", "bathroom", "garage", "balcony", "terrace", "patio", "backyard", "driveway", "sidewalk",
+      "restaurant", "cafeteria", "bakery", "grocery", "pharmacy", "barbershop", "laundry", "gym", "spa", "salon",
+      "office", "factory", "warehouse", "laboratory", "studio", "gallery", "arcade", "casino", "nightclub", "bar",
+      "cemetery", "prison", "courthouse", "embassy", "monument", "fountain", "statue", "pyramid", "shrine", "market",
+
+      // Objects (150)
+      "umbrella", "backpack", "suitcase", "wallet", "purse", "glasses", "sunglasses", "watch", "bracelet", "necklace",
+      "earring", "ring", "crown", "helmet", "mask", "gloves", "scarf", "hat", "cap", "boots",
+      "sneakers", "sandals", "slippers", "jacket", "sweater", "hoodie", "dress", "skirt", "pants", "shorts",
+      "shirt", "blouse", "suit", "tie", "belt", "socks", "underwear", "pajamas", "uniform", "costume",
+      "blanket", "pillow", "mattress", "bed", "couch", "chair", "table", "desk", "shelf", "drawer",
+      "closet", "wardrobe", "mirror", "lamp", "chandelier", "curtain", "carpet", "rug", "vase", "plant",
+      "flower", "candle", "clock", "calendar", "picture", "painting", "poster", "frame", "book", "magazine",
+      "newspaper", "letter", "envelope", "stamp", "pen", "pencil", "marker", "crayon", "eraser", "ruler",
+      "scissors", "tape", "glue", "stapler", "paperclip", "notebook", "folder", "binder", "calculator", "computer",
+      "laptop", "tablet", "phone", "camera", "television", "remote", "speaker", "headphones", "microphone", "keyboard",
+      "mouse", "printer", "scanner", "charger", "battery", "flashlight", "lantern", "match", "lighter", "knife",
+      "fork", "spoon", "chopsticks", "plate", "bowl", "cup", "mug", "glass", "bottle", "pot",
+      "pan", "oven", "stove", "microwave", "refrigerator", "freezer", "blender", "toaster", "kettle", "dishwasher",
+      "washer", "dryer", "iron", "vacuum", "broom", "mop", "bucket", "sponge", "towel", "soap",
+      "shampoo", "toothbrush", "toothpaste", "comb", "brush", "razor", "perfume", "lotion", "makeup", "toolbox",
+
+      // Activities (100)
+      "swimming", "running", "jumping", "climbing", "hiking", "camping", "fishing", "hunting", "skiing", "skating",
+      "surfing", "diving", "sailing", "kayaking", "canoeing", "rowing", "cycling", "racing", "driving", "flying",
+      "dancing", "singing", "acting", "painting", "drawing", "sculpting", "writing", "reading", "studying", "teaching",
+      "cooking", "baking", "grilling", "frying", "boiling", "chopping", "mixing", "serving", "eating", "drinking",
+      "sleeping", "dreaming", "waking", "stretching", "exercising", "lifting", "pushing", "pulling", "throwing", "catching",
+      "kicking", "hitting", "punching", "wrestling", "boxing", "fencing", "archery", "shooting", "bowling", "golfing",
+      "tennis", "basketball", "football", "soccer", "baseball", "hockey", "volleyball", "badminton", "pingpong", "chess",
+      "cards", "puzzles", "gaming", "streaming", "blogging", "vlogging", "texting", "calling", "emailing", "chatting",
+      "shopping", "browsing", "buying", "selling", "trading", "bargaining", "paying", "tipping", "saving", "spending",
+      "working", "meeting", "presenting", "planning", "organizing", "cleaning", "decorating", "repairing", "building", "creating",
+
+      // Nature (100)
+      "rainbow", "sunshine", "moonlight", "starlight", "sunrise", "sunset", "twilight", "midnight", "thunder", "lightning",
+      "raindrop", "snowflake", "hailstone", "tornado", "hurricane", "earthquake", "tsunami", "avalanche", "landslide", "flood",
+      "drought", "wildfire", "fog", "mist", "dew", "frost", "ice", "snow", "rain", "cloud",
+      "wind", "breeze", "storm", "blizzard", "heatwave", "climate", "weather", "season", "spring", "summer",
+      "autumn", "winter", "blossom", "petal", "leaf", "branch", "trunk", "root", "seed", "sprout",
+      "vine", "bush", "shrub", "tree", "palm", "pine", "oak", "maple", "willow", "bamboo",
+      "cactus", "fern", "moss", "algae", "coral", "reef", "shell", "pearl", "gem", "diamond",
+      "ruby", "emerald", "sapphire", "gold", "silver", "bronze", "copper", "iron", "steel", "stone",
+      "rock", "pebble", "boulder", "cliff", "cave", "crater", "geyser", "well", "sand", "mud",
+      "clay", "soil", "dirt", "dust", "ash", "lava", "magma", "crystal", "mineral", "fossil",
+
+      // Technology (50)
+      "robot", "drone", "satellite", "rocket", "spaceship", "telescope", "microscope", "radar", "laser", "magnet",
+      "circuit", "chip", "sensor", "motor", "engine", "generator", "turbine", "solar", "nuclear", "internet",
+      "website", "software", "hardware", "database", "server", "network", "wifi", "bluetooth", "antenna", "password",
+      "username", "download", "upload", "streaming", "podcast", "hashtag", "emoji", "selfie", "meme", "gadget",
+      "device", "screen", "display", "pixel", "cursor", "icon", "program", "app", "code", "algorithm",
+
+      // Transportation (50)
+      "airplane", "helicopter", "balloon", "blimp", "parachute", "glider", "jet", "spacecraft", "car", "truck",
+      "van", "bus", "taxi", "limousine", "ambulance", "firetruck", "motorcycle", "scooter", "bicycle", "tricycle",
+      "skateboard", "rollerblades", "wagon", "cart", "sled", "sleigh", "snowmobile", "tractor", "train", "tram",
+      "trolley", "monorail", "cable", "gondola", "elevator", "escalator", "stairs", "boat", "ship", "yacht",
+      "canoe", "kayak", "raft", "ferry", "cruise", "submarine", "hovercraft", "rickshaw", "carriage", "chariot",
+
+      // Professions (50)
+      "doctor", "nurse", "dentist", "surgeon", "therapist", "pharmacist", "veterinarian", "scientist", "researcher", "professor",
+      "teacher", "tutor", "counselor", "librarian", "principal", "coach", "trainer", "referee", "umpire", "judge",
+      "lawyer", "detective", "officer", "firefighter", "paramedic", "soldier", "pilot", "captain", "sailor", "astronaut",
+      "engineer", "architect", "designer", "artist", "musician", "actor", "director", "producer", "writer", "journalist",
+      "chef", "waiter", "bartender", "cashier", "manager", "salesperson", "accountant", "banker", "investor", "entrepreneur",
+
+      // Emotions & Concepts (50)
+      "happiness", "sadness", "anger", "fear", "surprise", "disgust", "love", "hate", "jealousy", "pride",
+      "shame", "guilt", "hope", "despair", "courage", "cowardice", "patience", "wisdom", "knowledge", "ignorance",
+      "truth", "secret", "mystery", "puzzle", "riddle", "question", "answer", "problem", "solution", "idea",
+      "thought", "memory", "dream", "nightmare", "fantasy", "reality", "illusion", "magic", "miracle", "luck",
+      "fate", "destiny", "karma", "freedom", "justice", "peace", "victory", "defeat", "adventure", "journey",
+
+      // Entertainment (50)
+      "movie", "cinema", "concert", "festival", "carnival", "parade", "show", "performance", "comedy", "drama",
+      "horror", "romance", "action", "cartoon", "anime", "documentary", "series", "episode", "premiere", "finale",
+      "sequel", "remake", "song", "album", "playlist", "melody", "rhythm", "beat", "lyrics", "chorus",
+      "verse", "game", "trivia", "quiz", "contest", "competition", "tournament", "championship", "medal", "trophy",
+      "ticket", "audience", "applause", "encore", "intermission", "curtain", "stage", "spotlight", "costume", "prop",
+
+      // Household (50)
+      "door", "window", "wall", "ceiling", "floor", "roof", "chimney", "fireplace", "staircase", "hallway",
+      "porch", "deck", "fence", "gate", "mailbox", "doorbell", "lock", "key", "handle", "knob",
+      "switch", "outlet", "plug", "wire", "pipe", "faucet", "sink", "toilet", "bathtub", "shower",
+      "heater", "cooler", "thermostat", "alarm", "sprinkler", "extinguisher", "detector", "doormat", "address", "package",
+      "delivery", "garbage", "recycle", "compost", "lawn", "hose", "sprinkler", "rake", "shovel", "wheelbarrow",
+
+      // Sports Equipment (50)
+      "ball", "bat", "racket", "club", "stick", "puck", "net", "goal", "basket", "hoop",
+      "pads", "cleats", "jersey", "headband", "whistle", "scoreboard", "timer", "stopwatch", "ribbon", "certificate",
+      "banner", "flag", "cone", "hurdle", "pole", "javelin", "discus", "hammer", "weight", "dumbbell",
+      "barbell", "treadmill", "elliptical", "rower", "stepper", "bench", "mat", "rope", "band", "glove",
+      "goggles", "snorkel", "fins", "wetsuit", "harness", "carabiner", "chalk", "grip", "target", "bullseye",
+
+      // Music (50)
+      "piano", "guitar", "violin", "drums", "trumpet", "flute", "saxophone", "clarinet", "trombone", "tuba",
+      "harp", "cello", "bass", "ukulele", "banjo", "harmonica", "accordion", "xylophone", "tambourine", "maracas",
+      "cymbal", "triangle", "bell", "gong", "chime", "kazoo", "recorder", "bagpipe", "organ", "synthesizer",
+      "amplifier", "turntable", "mixer", "sampler", "conductor", "orchestra", "band", "choir", "solo", "duet",
+      "trio", "quartet", "ensemble", "symphony", "opera", "ballet", "recital", "rehearsal", "audition", "improvisation",
+
+      // Fantasy & Mythology (50)
+      "dragon", "phoenix", "griffin", "mermaid", "centaur", "minotaur", "cyclops", "medusa", "hydra", "werewolf",
+      "vampire", "zombie", "ghost", "skeleton", "mummy", "witch", "wizard", "sorcerer", "warlock", "fairy",
+      "elf", "dwarf", "gnome", "goblin", "troll", "ogre", "giant", "titan", "demon", "angel",
+      "goddess", "hero", "villain", "knight", "princess", "prince", "king", "queen", "dungeon", "treasure",
+      "sword", "shield", "armor", "wand", "potion", "spell", "enchantment", "prophecy", "legend", "myth"
+    ];
+
+    // === Secure Random Number Generation ===
+    function secureRandomInt(max) {
+      if (max <= 0) return 0;
+      const limit = Math.floor(0xFFFFFFFF / max) * max;
+      let randomValue;
+      const array = new Uint32Array(1);
+      do {
+        crypto.getRandomValues(array);
+        randomValue = array[0];
+      } while (randomValue >= limit);
+      return randomValue % max;
+    }
+
+    function getRandomWord() {
+      return WORDS[secureRandomInt(WORDS.length)];
+    }
+
+    function selectImposters(playerCount) {
+      // Determine imposter count based on player count
+      let imposterCount;
+      if (playerCount <= 5) imposterCount = 1;
+      else if (playerCount <= 8) imposterCount = 2;
+      else imposterCount = 3;
+
+      // Select unique random indices
+      const indices = new Set();
+      while (indices.size < imposterCount) {
+        indices.add(secureRandomInt(playerCount));
+      }
+      return Array.from(indices).sort((a, b) => a - b);
+    }
+
+    function getImposterCount(playerCount) {
+      if (playerCount <= 5) return 1;
+      if (playerCount <= 8) return 2;
+      return 3;
+    }
+
+    // === Game Manager ===
+    class GameManager {
+      constructor() {
+        this.state = {
+          phase: 'setup',
+          playerCount: 4,
+          currentPlayerIndex: 0,
+          imposterIndices: [],
+          secretWord: '',
+          wordRevealed: false,
+          impostersRevealed: false
+        };
+        this.listeners = new Set();
+      }
+
+      subscribe(callback) {
+        this.listeners.add(callback);
+        callback(this.state);
+        return () => this.listeners.delete(callback);
+      }
+
+      setState(updates) {
+        this.state = { ...this.state, ...updates };
+        this.listeners.forEach(fn => fn(this.state));
+      }
+
+      setPlayerCount(count) {
+        const clamped = Math.max(3, Math.min(10, count));
+        this.setState({ playerCount: clamped });
+      }
+
+      incrementPlayers() {
+        this.setPlayerCount(this.state.playerCount + 1);
+      }
+
+      decrementPlayers() {
+        this.setPlayerCount(this.state.playerCount - 1);
+      }
+
+      startGame() {
+        const { playerCount } = this.state;
+        this.setState({
+          phase: 'passing',
+          currentPlayerIndex: 0,
+          imposterIndices: selectImposters(playerCount),
+          secretWord: getRandomWord(),
+          wordRevealed: false,
+          impostersRevealed: false
+        });
+      }
+
+      revealCard() {
+        this.setState({ phase: 'reveal' });
+      }
+
+      hideCard() {
+        const { currentPlayerIndex, playerCount } = this.state;
+        const nextIndex = currentPlayerIndex + 1;
+
+        if (nextIndex >= playerCount) {
+          this.setState({ phase: 'results' });
+        } else {
+          this.setState({
+            phase: 'passing',
+            currentPlayerIndex: nextIndex
+          });
+        }
+      }
+
+      isCurrentPlayerImposter() {
+        return this.state.imposterIndices.includes(this.state.currentPlayerIndex);
+      }
+
+      revealWord() {
+        this.setState({ wordRevealed: true });
+      }
+
+      revealImposters() {
+        this.setState({ impostersRevealed: true });
+      }
+
+      resetGame() {
+        this.setState({
+          phase: 'setup',
+          currentPlayerIndex: 0,
+          imposterIndices: [],
+          secretWord: '',
+          wordRevealed: false,
+          impostersRevealed: false
+        });
+      }
+
+      quickRestart() {
+        const { playerCount } = this.state;
+        this.setState({
+          phase: 'passing',
+          currentPlayerIndex: 0,
+          imposterIndices: selectImposters(playerCount),
+          secretWord: getRandomWord(),
+          wordRevealed: false,
+          impostersRevealed: false
+        });
+      }
+    }
+
+    // === UI Renderer ===
+    class UIRenderer {
+      constructor(game) {
+        this.game = game;
+        this.screens = {
+          setup: document.getElementById('setup-screen'),
+          passing: document.getElementById('passing-screen'),
+          reveal: document.getElementById('reveal-screen'),
+          results: document.getElementById('results-screen')
+        };
+        this.announcer = document.getElementById('sr-announcer');
+
+        game.subscribe(state => this.render(state));
+        this.bindEvents();
+      }
+
+      announce(message) {
+        this.announcer.textContent = '';
+        requestAnimationFrame(() => {
+          this.announcer.textContent = message;
+        });
+      }
+
+      showScreen(screenName) {
+        Object.entries(this.screens).forEach(([name, el]) => {
+          el.classList.toggle('active', name === screenName);
+        });
+      }
+
+      render(state) {
+        this.showScreen(state.phase);
+
+        switch (state.phase) {
+          case 'setup':
+            this.renderSetup(state);
+            break;
+          case 'passing':
+            this.renderPassing(state);
+            break;
+          case 'reveal':
+            this.renderReveal(state);
+            break;
+          case 'results':
+            this.renderResults(state);
+            break;
+        }
+      }
+
+      renderSetup(state) {
+        document.getElementById('player-count').textContent = state.playerCount;
+        document.getElementById('btn-decrement').disabled = state.playerCount <= 3;
+        document.getElementById('btn-increment').disabled = state.playerCount >= 10;
+
+        const imposterCount = getImposterCount(state.playerCount);
+        document.getElementById('imposter-info').textContent =
+          `${imposterCount} imposter${imposterCount > 1 ? 's' : ''} among you`;
+
+        this.renderPlayerDots(state.playerCount, imposterCount);
+      }
+
+      renderPlayerDots(count, imposterCount) {
+        const container = document.getElementById('player-dots');
+        container.innerHTML = '';
+        for (let i = 0; i < count; i++) {
+          const dot = document.createElement('span');
+          dot.className = 'player-dot' + (i < imposterCount ? ' imposter' : '');
+          container.appendChild(dot);
+        }
+      }
+
+      renderPassing(state) {
+        const playerNum = state.currentPlayerIndex + 1;
+        document.getElementById('current-player').textContent = playerNum;
+        document.getElementById('progress-text').textContent = `${playerNum} / ${state.playerCount}`;
+
+        const progress = (playerNum / state.playerCount) * 100;
+        document.getElementById('progress-fill').style.width = `${progress}%`;
+
+        // Reset card state
+        const card = document.getElementById('game-card');
+        card.classList.remove('flipped', 'imposter');
+
+        this.announce(`Player ${playerNum}, tap to reveal your card.`);
+      }
+
+      renderReveal(state) {
+        const isImposter = this.game.isCurrentPlayerImposter();
+        const card = document.getElementById('game-card');
+        const wordEl = document.getElementById('card-word');
+        const subtitleEl = document.getElementById('card-subtitle');
+        const emojiEl = document.getElementById('card-emoji');
+
+        card.classList.toggle('imposter', isImposter);
+
+        if (isImposter) {
+          emojiEl.textContent = '\u{1F575}'; // Detective emoji
+          wordEl.textContent = 'IMPOSTER';
+          subtitleEl.textContent = "You don't know the word!";
+          this.announce('You are the imposter! You do not know the word.');
+        } else {
+          emojiEl.textContent = '\u{1F4AC}'; // Speech bubble
+          wordEl.textContent = state.secretWord.toUpperCase();
+          subtitleEl.textContent = 'Remember this word!';
+          this.announce(`Your word is ${state.secretWord}. Remember it!`);
+        }
+
+        // Trigger flip after a tiny delay for animation
+        requestAnimationFrame(() => {
+          card.classList.add('flipped');
+        });
+      }
+
+      renderResults(state) {
+        const wordEl = document.getElementById('result-word');
+        wordEl.textContent = state.secretWord.toUpperCase();
+
+        const imposterCount = state.imposterIndices.length;
+        document.getElementById('result-count').textContent =
+          `${imposterCount} imposter${imposterCount > 1 ? 's' : ''} among ${state.playerCount} players`;
+
+        // Handle word reveal
+        const showWordBtn = document.getElementById('btn-show-word');
+        const revealImpostersBtn = document.getElementById('btn-reveal-imposters');
+
+        if (state.wordRevealed) {
+          wordEl.classList.remove('hidden');
+          showWordBtn.style.display = 'none';
+          revealImpostersBtn.style.display = '';
+        } else {
+          wordEl.classList.add('hidden');
+          showWordBtn.style.display = '';
+          revealImpostersBtn.style.display = 'none';
+        }
+
+        // Handle imposter reveal
+        const revealSection = document.getElementById('imposters-reveal');
+
+        if (state.impostersRevealed) {
+          revealSection.classList.add('visible');
+          revealImpostersBtn.style.display = 'none';
+
+          const playerNumbers = state.imposterIndices.map(i => `Player ${i + 1}`).join(', ');
+          document.getElementById('imposters-players').textContent = playerNumbers;
+        } else {
+          revealSection.classList.remove('visible');
+        }
+
+        if (state.wordRevealed) {
+          this.announce(`Round complete. The word was ${state.secretWord}. Discuss and find the imposters!`);
+        } else {
+          this.announce(`Round complete. Discuss and find the imposters, then reveal the word!`);
+        }
+      }
+
+      bindEvents() {
+        // Setup screen
+        document.getElementById('btn-increment').addEventListener('click', () => this.game.incrementPlayers());
+        document.getElementById('btn-decrement').addEventListener('click', () => this.game.decrementPlayers());
+        document.getElementById('btn-start').addEventListener('click', () => this.game.startGame());
+
+        // Passing screen - tap to reveal
+        document.getElementById('passing-screen').addEventListener('click', () => {
+          if (this.game.state.phase === 'passing') {
+            this.game.revealCard();
+          }
+        });
+
+        // Reveal screen - tap to hide
+        document.getElementById('reveal-screen').addEventListener('click', () => {
+          if (this.game.state.phase === 'reveal') {
+            const card = document.getElementById('game-card');
+            card.classList.remove('flipped');
+            setTimeout(() => this.game.hideCard(), 350);
+          }
+        });
+
+        // Results screen
+        document.getElementById('btn-show-word').addEventListener('click', () => this.game.revealWord());
+        document.getElementById('btn-reveal-imposters').addEventListener('click', () => this.game.revealImposters());
+        document.getElementById('btn-new-game').addEventListener('click', () => this.game.resetGame());
+        document.getElementById('btn-same-players').addEventListener('click', () => this.game.quickRestart());
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+
+        // Prevent double-tap zoom on mobile
+        document.addEventListener('touchend', (e) => {
+          if (e.target.closest('.tappable')) {
+            e.preventDefault();
+          }
+        }, { passive: false });
+      }
+
+      handleKeyboard(e) {
+        const { phase } = this.game.state;
+
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+
+          if (phase === 'setup') {
+            this.game.startGame();
+          } else if (phase === 'passing') {
+            this.game.revealCard();
+          } else if (phase === 'reveal') {
+            const card = document.getElementById('game-card');
+            card.classList.remove('flipped');
+            setTimeout(() => this.game.hideCard(), 350);
+          }
+        }
+
+        if (phase === 'setup') {
+          if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+            this.game.incrementPlayers();
+          }
+          if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+            this.game.decrementPlayers();
+          }
+        }
+      }
+    }
+
+    // === Initialize App ===
+    document.addEventListener('DOMContentLoaded', () => {
+      const game = new GameManager();
+      const ui = new UIRenderer(game);
+
+      // Debug: Log imposter distribution over multiple runs
+      if (location.search.includes('debug')) {
+        const distribution = {};
+        for (let i = 0; i < 1000; i++) {
+          const idx = secureRandomInt(10);
+          distribution[idx] = (distribution[idx] || 0) + 1;
+        }
+        console.log('Random distribution test (should be ~100 each):', distribution);
+      }
+    });
+  </script>
+</body>
+</html>
